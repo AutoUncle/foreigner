@@ -9,7 +9,14 @@ module Foreigner
     module ClassMethods
       def dump_foreign_key(foreign_key)
         statement_parts = [ ('add_foreign_key ' + remove_prefix_and_suffix(foreign_key.from_table).inspect) ]
-        statement_parts << remove_prefix_and_suffix(foreign_key.to_table).inspect
+        
+        if defined?(::Apartment) && ::Apartment.excluded_models.map{|model| model.constantize.table_name}.any?{|table_name| table_name.include?(foreign_key.to_table)}
+          alt_to_table = [::Apartment.default_schema, foreign_key.to_table].join('.')
+        else
+          alt_to_table = foreign_key.to_table
+        end
+        
+        statement_parts << remove_prefix_and_suffix(alt_to_table).inspect
         statement_parts << ('name: ' + foreign_key.options[:name].inspect)
 
         if foreign_key.options[:column] != "#{remove_prefix_and_suffix(foreign_key.to_table).singularize}_id"
