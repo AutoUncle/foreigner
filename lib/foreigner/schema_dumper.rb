@@ -10,7 +10,7 @@ module Foreigner
       def dump_foreign_key(foreign_key)
         statement_parts = [ ('add_foreign_key ' + remove_prefix_and_suffix(foreign_key.from_table).inspect) ]
         
-        if defined?(::Apartment) && ::Apartment.excluded_models.map{|model| model.constantize.table_name}.any?{|table_name| table_name.include?(foreign_key.to_table)}
+        if defined?(::Apartment) && ::Apartment.excluded_models.map{|model| model.constantize.table_name.gsub(/.*\./, '')}.include?(foreign_key.to_table)
           alt_to_table = [::Apartment.default_schema, foreign_key.to_table].join('.')
         else
           alt_to_table = foreign_key.to_table
